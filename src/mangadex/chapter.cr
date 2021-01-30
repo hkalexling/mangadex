@@ -11,7 +11,11 @@ module MangaDex
     getter lang_code : String
     getter timestamp : Int64
     @[JSON::Field(key: "groups")]
-    getter raw_groups : Array(Int64)
+    getter raw_groups : Array(Int64 | JSON::Any)
+    @[JSON::Field(key: "mangaId")]
+    getter manga_id : Int64
+    @[JSON::Field(key: "mangaTitle")]
+    getter manga_title : String
 
     @pages : Array(String)?
     @server : String?
@@ -24,7 +28,15 @@ module MangaDex
     end
 
     def groups : Array(Group)
-      raw_groups.map { |gid| client!.group gid }
+      raw_groups.map do |group|
+        case group
+        when Int64
+          gid = group
+        else
+          gid = group.as_h["id"].as_i64
+        end
+        client!.group gid
+      end
     end
 
     private def get_details

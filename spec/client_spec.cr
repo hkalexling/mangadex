@@ -7,6 +7,13 @@ describe Client do
     manga.title.should eq "One Punch-Man"
   end
 
+  it "gets chapter by ID" do
+    chapter = Client.new.chapter 1184870
+    chapter.id.should eq 1184870
+    chapter.manga_title.should eq "One Punch-Man"
+    chapter.manga_id.should eq 7139
+  end
+
   it "lists chapters" do
     chapters = Client.new.manga(7139).chapters
     chapters.size.should be > 0

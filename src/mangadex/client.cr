@@ -101,6 +101,12 @@ module MangaDex
       manga
     end
 
+    def chapter(id : String | Int64) : Chapter
+      chapter = Chapter.from_json get "/chapter/#{id}?mark_read=false"
+      chapter.client = self
+      chapter
+    end
+
     def group(id : String | Int64) : Group
       Group.from_json get "/group/#{id}"
     end
