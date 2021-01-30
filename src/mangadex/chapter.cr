@@ -17,6 +17,9 @@ module MangaDex
     @[JSON::Field(key: "mangaTitle")]
     getter manga_title : String
 
+    @[JSON::Field(ignore: true)]
+    setter manga : Manga?
+
     @pages : Array(String)?
     @server : String?
     @fallback_server : String?
@@ -35,12 +38,21 @@ module MangaDex
         else
           gid = group.as_h["id"].as_i64
         end
-        client!.group gid
+
+        gname = manga.groups_hash[gid]?
+        if gname
+          group = Group.new gid, gname
+        else
+          group = client!.group gid
+        end
+
+        group
       end
     end
 
     def manga : Manga
-      client!.manga manga_id
+      @manga ||= client!.manga manga_id
+      @manga.not_nil!
     end
 
     private def get_details

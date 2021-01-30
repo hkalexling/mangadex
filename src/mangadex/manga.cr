@@ -10,6 +10,9 @@ module MangaDex
     @[JSON::Field(key: "mainCover")]
     getter cover : String
 
+    @[JSON::Field(ignore: true)]
+    getter groups_hash = {} of Int64 => String
+
     use_client
 
     def self.get(id : String) : Manga
@@ -18,9 +21,15 @@ module MangaDex
 
     def chapters : Array(Chapter)
       json = JSON.parse client!.get "/manga/#{id}/chapters"
+      json["groups"].as_a.each do |obj|
+        id = obj.as_h["id"].as_i64
+        name = obj.as_h["name"].as_s
+        @groups_hash[id] = name
+      end
       json["chapters"].as_a.map do |c|
         chp = Chapter.from_json c.to_json
         chp.client = client
+        chp.manga = self
         chp
       end
     end
