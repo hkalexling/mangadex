@@ -39,6 +39,10 @@ module MangaDex
       end
     end
 
+    def manga : Manga
+      client!.manga manga_id
+    end
+
     private def get_details
       json = JSON.parse client!.get "/chapter/#{id}?mark_read=false"
       @server = json["server"].as_s
