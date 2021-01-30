@@ -19,6 +19,8 @@ module MangaDex
 
     def initialize(*, @base_url = "https://mangadex.org",
                    @api_url = "https://mangadex.org/api/v2")
+      @base_url = @base_url.rstrip "/"
+      @api_url = @api_url.rstrip "/"
     end
 
     def auth(username, password)
