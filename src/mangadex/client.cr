@@ -68,31 +68,39 @@ module MangaDex
       cookies.add_request_headers headers
     end
 
+    private macro handle_error
+      unless res.success?
+        begin
+          json = JSON.parse res.body
+          msg = json["message"].as_s
+        rescue
+          msg = res.status_message
+        end
+        raise APIError.new "Failed to get #{url}. #{msg}", res.status_code
+      end
+    end
+
     def get(url, *, api = true)
       unless url =~ /https?:\/\//
-        url = "#{api ? @api_url : @base_url}/#{url.gsub /^\//, ""}"
+        url = "#{api ? @api_url : @base_url}/#{url.lstrip "/"}"
       end
       res = HTTP::Client.get url, headers: get_headers
+      handle_error
+
       return res.body unless api
-      json = JSON.parse res.body
-      unless json["code"] == 200 && json["status"] == "OK"
-        raise APIError.new json["message"].as_s, json["code"].as_i
-      end
-      json["data"].to_json
+      JSON.parse(res.body)["data"].to_json
     end
 
     def post(url, body)
       unless url =~ /https?:\/\//
-        url = "#{@api_url}/#{url.gsub /^\//, ""}"
+        url = "#{@api_url}/#{url.lstrip "/"}"
       end
       headers = get_headers
       headers["Content-Type"] = "application/json"
       res = HTTP::Client.post url, headers: headers, body: body
-      json = JSON.parse res.body
-      unless json["code"] == 200 && json["status"] == "OK"
-        raise APIError.new json["message"].as_s, json["code"].as_i
-      end
-      json["data"].to_json
+      handle_error
+
+      JSON.parse(res.body)["data"].to_json
     end
 
     def manga(id : String | Int64) : Manga
