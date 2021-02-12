@@ -36,12 +36,16 @@ module MangaDex
         "login_password" => password,
         "remember_me"    => "1",
       })
-      res = HTTP::Client.post url, headers: headers, body: body do |res|
-        cookies = HTTP::Cookies.from_headers res.headers
-        @token = cookies["mangadex_rememberme_token"].value
-        @token_expires = cookies["mangadex_rememberme_token"].expires ||
-                         Time.utc
+      res = HTTP::Client.post url, headers: headers, body: body
+      unless res.body.empty?
+        parser = Myhtml::Parser.new res.body
+        alert = parser.css("div.alert-danger").first?.try &.inner_text
+        raise APIError.new(alert, 401) if alert
       end
+      cookies = HTTP::Cookies.from_headers res.headers
+      @token = cookies["mangadex_rememberme_token"].value
+      @token_expires = cookies["mangadex_rememberme_token"].expires ||
+                       Time.utc
     end
 
     def auth?
