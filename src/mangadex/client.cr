@@ -132,7 +132,7 @@ module MangaDex
     # Searches `https://mangadex.org/quick_search/:query`, scrapes the manga
     #   ids, and uses the API to get a list of manga from the ids.
     def search(query : String) : Array(Manga)
-      html = get "/quick_search/#{query}", api: false
+      html = get "/quick_search/#{URI.encode query}", api: false
       parser = Myhtml::Parser.new html
       ary = [] of Manga
       parser.css("div.manga-entry").each do |node|
@@ -148,7 +148,7 @@ module MangaDex
     #   and sends only one request to MangaDex, so it is much faster than
     #   `search`.
     def partial_search(query : String) : Array(PartialManga)
-      html = get "/quick_search/#{query}", api: false
+      html = get "/quick_search/#{URI.encode query}", api: false
       parser = Myhtml::Parser.new html
       ary = [] of PartialManga
       parser.css("div.manga-entry").each do |node|
@@ -160,6 +160,7 @@ module MangaDex
         }
         title = node.css(".manga_title").first?.try &.inner_text
         description = node.css("div.pl-1").first?.try &.inner_text
+          .gsub(/[\s\t\n]+/, " ").strip
 
         ary << PartialManga.new id, self, cover: cover, title: title,
           description: description
