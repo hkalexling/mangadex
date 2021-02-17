@@ -129,18 +129,40 @@ module MangaDex
       user
     end
 
-    def search_manga(query : String) : Array(Manga)
-      params = HTTP::Params.new
-      params.add "title", query
-      html = get "/search?#{params.to_s}", api: false
+    # Searches `https://mangadex.org/quick_search/:query`, scrapes the manga
+    #   ids, and uses the API to get a list of manga from the ids.
+    def search(query : String) : Array(Manga)
+      html = get "/quick_search/#{query}", api: false
       parser = Myhtml::Parser.new html
       ary = [] of Manga
-      parser.css("a.manga_title").each do |node|
-        href = node.attribute_by "href"
-        next if href.nil?
-        match = /(?:title|manga)\/([0-9]+)/.match href
-        next if match.nil?
-        ary << manga match[1]
+      parser.css("div.manga-entry").each do |node|
+        id = node.attribute_by "data-id"
+        next unless id
+        ary << manga id
+      end
+      ary
+    end
+
+    # Searches `https://mangadex.org/quick_search/:query`, and scrapes
+    #   everything as a list of `PartialManga`s. This does not use the API,
+    #   and sends only one request to MangaDex, so it is much faster than
+    #   `search`.
+    def partial_search(query : String) : Array(PartialManga)
+      html = get "/quick_search/#{query}", api: false
+      parser = Myhtml::Parser.new html
+      ary = [] of PartialManga
+      parser.css("div.manga-entry").each do |node|
+        id = node.attribute_by("data-id").try &.to_i64?
+        next unless id
+
+        cover = node.css("img").first?.try &.attribute_by("src").try { |src|
+          "#{@base_url}#{src}"
+        }
+        title = node.css(".manga_title").first?.try &.inner_text
+        description = node.css("div.pl-1").first?.try &.inner_text
+
+        ary << PartialManga.new id, self, cover: cover, title: title,
+          description: description
       end
       ary
     end

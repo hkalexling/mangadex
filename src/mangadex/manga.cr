@@ -15,10 +15,6 @@ module MangaDex
 
     use_client
 
-    def self.get(id : String) : Manga
-      self.from_json client.get "/manga/#{id}"
-    end
-
     def chapters : Array(Chapter)
       json = JSON.parse client!.get "/manga/#{id}/chapters"
       json["groups"].as_a.each do |obj|
@@ -31,6 +27,33 @@ module MangaDex
         chp.client = client
         chp.manga = self
         chp
+      end
+    end
+  end
+
+  struct PartialManga
+    include JSON::Serializable
+
+    getter id : Int64
+    getter title : String
+    getter description : String
+    @[JSON::Field(key: "mainCover")]
+    getter cover : String
+
+    use_client
+
+    def initialize(@id, @client, *, title : String? = nil,
+                   description : String? = nil,
+                   cover : String? = nil)
+      if title && description && cover
+        @title = title
+        @description = description
+        @cover = cover
+      else
+        manga = client!.manga @id
+        @title = manga.title
+        @description = manga.description
+        @cover = manga.cover
       end
     end
   end
