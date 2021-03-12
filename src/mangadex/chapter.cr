@@ -20,8 +20,11 @@ module MangaDex
     @[JSON::Field(ignore: true)]
     setter manga : Manga?
 
+    @[JSON::Field(ignore: true)]
     @pages : Array(String)?
+    @[JSON::Field(ignore: true)]
     @server : String?
+    @[JSON::Field(ignore: true)]
     @fallback_server : String?
 
     use_client
@@ -57,6 +60,10 @@ module MangaDex
 
     private def get_details
       json = JSON.parse client!.get "/chapter/#{id}?mark_read=false"
+      if json["status"]? == "external"
+        raise APIError.new("This chapter is hosted on an external site " \
+                           "#{json["pages"]?}.", 404)
+      end
       @server = json["server"].as_s
       if fallback = json["serverFallback"]?
         @fallback_server = fallback.as_s

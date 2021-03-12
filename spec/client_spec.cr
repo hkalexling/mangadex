@@ -39,4 +39,10 @@ describe Client do
     user.id.should eq 826930
     user.username.should eq "hkalexling"
   end
+
+  it "raises on external chapters" do
+    expect_raises APIError do
+      Client.new.chapter(1226642).pages
+    end
+  end
 end
