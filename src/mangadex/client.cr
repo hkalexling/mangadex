@@ -18,7 +18,7 @@ module MangaDex
     property user_id : Int64?
 
     def initialize(*, @base_url = "https://mangadex.org",
-                   @api_url = "https://mangadex.org/api/v2")
+                   @api_url = "https://api.mangadex.org/v2")
       @base_url = @base_url.rstrip "/"
       @api_url = @api_url.rstrip "/"
     end
