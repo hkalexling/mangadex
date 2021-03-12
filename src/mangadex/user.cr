@@ -1,3 +1,5 @@
+require "uri/params"
+
 module MangaDex
   struct User
     include JSON::Serializable
@@ -7,8 +9,9 @@ module MangaDex
 
     use_client
 
-    def followed_updates : Array(Chapter)
-      json = JSON.parse client!.get "/user/#{id}/followed-updates"
+    def followed_updates(*, page : Int32 = 1) : Array(Chapter)
+      params = URI::Params.encode({"p" => page, "hentai" => 1})
+      json = JSON.parse client!.get "/user/#{id}/followed-updates?#{params}"
       json["chapters"].as_a.map do |item|
         Chapter.from_json item.to_json
       end
