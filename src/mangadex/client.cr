@@ -123,7 +123,7 @@ module MangaDex
       Group.from_json get "/group/#{id}"
     end
 
-    def user(id : String | Int64) : User
+    def user(id : String | Int64 = "me") : User
       user = User.from_json get "/user/#{id}"
       user.client = self
       user
