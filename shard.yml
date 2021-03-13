@@ -11,3 +11,6 @@ license: MIT
 dependencies:
   myhtml:
     github: kostya/myhtml
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
