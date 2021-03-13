@@ -3,5 +3,5 @@ require "./mangadex/util.cr"
 require "./mangadex/*"
 
 module MangaDex
-  VERSION = "0.9.0"
+  VERSION = "0.10.0"
 end
