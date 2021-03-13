@@ -36,7 +36,7 @@ module MangaDex
 
     getter id : Int64
     getter title : String
-    getter description : String
+    getter description : String?
     @[JSON::Field(key: "mainCover")]
     getter cover : String
 
@@ -45,7 +45,7 @@ module MangaDex
     def initialize(@id, @client, *, title : String? = nil,
                    description : String? = nil,
                    cover : String? = nil)
-      if title && description && cover
+      if title && cover
         @title = title
         @description = description
         @cover = cover
