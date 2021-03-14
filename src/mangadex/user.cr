@@ -4,14 +4,24 @@ module MangaDex
   struct Updates
     include JSON::Serializable
 
-    getter chapters : Array(Chapter)
     getter groups : Array(Group)
 
     @[JSON::Field(key: "manga")]
     @raw_manga : Hash(String, PartialManga)
+    @[JSON::Field(key: "chapters")]
+    @raw_chapters : Array(Chapter)
 
     def manga : Array(PartialManga)
       @raw_manga.values
+    end
+
+    def chapters : Array(Chapter)
+      @raw_chapters.map do |ch|
+        ch.groups = ch.raw_groups.map do |gid|
+          groups.find(&.id.== gid).not_nil!
+        end
+        ch
+      end
     end
   end
 

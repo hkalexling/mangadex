@@ -12,6 +12,7 @@ describe Client do
     chapter.id.should eq 1184870
     chapter.manga_title.should eq "One Punch-Man"
     chapter.manga_id.should eq 7139
+    chapter.groups.size.should be > 0
   end
 
   it "gets manga from chapter" do
@@ -24,7 +25,9 @@ describe Client do
   it "lists chapters" do
     chapters = Client.new.manga(7139).chapters
     chapters.size.should be > 0
-    pages = chapters.sample(1).first.pages
+    chapter = chapters.sample(1).first
+    chapter.groups.size.should be > 0
+    pages = chapter.pages
     pages.size.should be > 0
     pages
       .all? do |url|

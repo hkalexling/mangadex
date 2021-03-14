@@ -11,7 +11,7 @@ module MangaDex
     getter lang_code : String
     getter timestamp : Int64
     @[JSON::Field(key: "groups")]
-    getter raw_groups : Array(Int64 | JSON::Any)
+    getter raw_groups : Array(Int64 | Group)
     @[JSON::Field(key: "mangaId")]
     getter manga_id : Int64
     @[JSON::Field(key: "mangaTitle")]
@@ -19,6 +19,9 @@ module MangaDex
 
     @[JSON::Field(ignore: true)]
     setter manga : Manga?
+
+    @[JSON::Field(ignore: true)]
+    setter groups = [] of Group
 
     @[JSON::Field(ignore: true)]
     @pages : Array(String)?
@@ -29,28 +32,16 @@ module MangaDex
 
     use_client
 
-    def language : String
-      LANG_CODES[lang_code]? || "Other"
+    def groups : Array(Group)
+      if @groups.empty?
+        raw_groups.select Group
+      else
+        @groups
+      end
     end
 
-    def groups : Array(Group)
-      raw_groups.map do |group|
-        case group
-        when Int64
-          gid = group
-        else
-          gid = group.as_h["id"].as_i64
-        end
-
-        gname = manga.groups_hash[gid]?
-        if gname
-          group = Group.new gid, gname
-        else
-          group = client!.group gid
-        end
-
-        group
-      end
+    def language : String
+      LANG_CODES[lang_code]? || "Other"
     end
 
     def manga : Manga
